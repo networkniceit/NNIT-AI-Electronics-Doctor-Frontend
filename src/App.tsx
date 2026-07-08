@@ -116,7 +116,7 @@ export default function App() {
   const [authed, setAuthed] = useState(() => !!localStorage.getItem('nnit_token'));
   const [authUser, setAuthUser] = useState(() => localStorage.getItem('nnit_user') ?? '');
 
-  function handleLogin(token: string, user: string) {
+  function handleLogin(_token: string, user: string) {
     setAuthed(true); setAuthUser(user);
   }
   function handleLogout() {
@@ -1781,6 +1781,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     </>
   );
 }
+
 
 
 
