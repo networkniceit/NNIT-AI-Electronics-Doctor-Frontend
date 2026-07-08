@@ -56,7 +56,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => vo
         setMode('login'); setError('Registered! Please log in.');
       } else {
         const res = await axios.post(`${API}/ai/auth/login`, { username, password });
-        const token = res.data?.token ?? res.data?.access_token ?? res.data?.key ?? '';
+        const token = res.data?.access_token ?? res.data?.token ?? res.data?.key ?? '';
         if (token) {
           localStorage.setItem('nnit_token', token);
           localStorage.setItem('nnit_user', username);
@@ -1781,6 +1781,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     </>
   );
 }
+
 
 
 
