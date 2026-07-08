@@ -3,7 +3,7 @@ import axios from 'axios';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
-const API = 'http://127.0.0.1:8000';
+const API = 'https://nnit-ai-electronics-doctor-backend-production.up.railway.app';
 
 interface Customer {
   id: string; name: string; phone: string; email: string;
@@ -1687,5 +1687,6 @@ export default function App() {
     </>
   );
 }
+
 
 
