@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -38,7 +38,99 @@ interface Appointment {
 
 type Tab = 'dashboard' | 'customers' | 'tickets' | 'invoices' | 'inventory' | 'analytics' | 'calendar';
 
+// â”€â”€ LOGIN SCREEN â”€â”€
+function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => void }) {
+  const [mode, setMode] = useState<'login'|'register'>('login');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    if (!username.trim() || !password.trim()) { setError('Username and password required.'); return; }
+    setLoading(true); setError('');
+    try {
+      if (mode === 'register') {
+        await axios.post(`${API}/ai/auth/register`, { username, password, full_name: fullName, role: 'Admin' });
+        setMode('login'); setError('Registered! Please log in.');
+      } else {
+        const res = await axios.post(`${API}/ai/auth/login`, { username, password });
+        const token = res.data?.token ?? res.data?.access_token ?? res.data?.key ?? '';
+        if (token) {
+          localStorage.setItem('nnit_token', token);
+          localStorage.setItem('nnit_user', username);
+          onLogin(token, username);
+        } else {
+          // Backend login succeeded but no token â€” allow access anyway
+          localStorage.setItem('nnit_user', username);
+          onLogin('local', username);
+        }
+      }
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? 'Login failed. Check credentials.');
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div style={{minHeight:'100vh',background:'#0b0f1a',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Inter','Segoe UI',system-ui,sans-serif"}}>
+      <div style={{width:380,background:'#111827',border:'1px solid #1e2d40',borderRadius:14,padding:36,display:'flex',flexDirection:'column',gap:18}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
+          <div style={{width:42,height:42,background:'linear-gradient(135deg,#3b82f6,#8b5cf6)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>ðŸ”¬</div>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:'#f1f5f9'}}>NNIT AI Electronics Doctor Pro</div>
+            <div style={{fontSize:11,color:'#475569'}}>Network Nice IT (NNIT)</div>
+          </div>
+        </div>
+        <div style={{fontSize:13,fontWeight:600,color:'#f1f5f9'}}>{mode==='login'?'Sign In':'Create Account'}</div>
+        {mode==='register'&&(
+          <div style={{display:'flex',flexDirection:'column',gap:4}}>
+            <label style={{fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Full Name</label>
+            <input style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'}} placeholder='Your name' value={fullName} onChange={e=>setFullName(e.target.value)}/>
+          </div>
+        )}
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <label style={{fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Username</label>
+          <input style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'}} placeholder='Username' value={username} onChange={e=>setUsername(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <label style={{fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Password</label>
+          <input style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'}} type='password' placeholder='Password' value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
+        </div>
+        {error&&<div style={{background: error.includes('Registered') ?'#14532d':'#450a0a',color:error.includes('Registered')?'#4ade80':'#f87171',borderRadius:6,padding:'8px 12px',fontSize:12}}>{error}</div>}
+        <button onClick={handleSubmit} disabled={loading} style={{background:'linear-gradient(135deg,#3b82f6,#6366f1)',border:'none',color:'#fff',padding:'10px 20px',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer',opacity:loading?0.7:1}}>
+          {loading?'Please wait...':(mode==='login'?'Sign In':'Create Account')}
+        </button>
+        <div style={{textAlign:'center',fontSize:12,color:'#475569'}}>
+          {mode==='login'?<>No account? <span style={{color:'#60a5fa',cursor:'pointer'}} onClick={()=>{setMode('register');setError('');}}>Register</span></>
+            :<>Have an account? <span style={{color:'#60a5fa',cursor:'pointer'}} onClick={()=>{setMode('login');setError('');}}>Sign In</span></>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  // â”€â”€ AUTH â”€â”€
+  const [authed, setAuthed] = useState(() => !!localStorage.getItem('nnit_token'));
+  const [authUser, setAuthUser] = useState(() => localStorage.getItem('nnit_user') ?? '');
+
+  function handleLogin(token: string, user: string) {
+    setAuthed(true); setAuthUser(user);
+  }
+  function handleLogout() {
+    localStorage.removeItem('nnit_token');
+    localStorage.removeItem('nnit_user');
+    setAuthed(false); setAuthUser('');
+  }
+
+  if (!authed) return <LoginScreen onLogin={handleLogin}/>;
+
+  return <MainApp authUser={authUser} onLogout={handleLogout}/>;
+}
+
+function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>('dashboard');
 
   // Dashboard state
@@ -951,14 +1043,16 @@ export default function App() {
         <div className='topbar-right'>
           <div className='sync-pill'>
             <div className='backend-dot' style={{background:backendOnline?'#22c55e':'#f87171'}}/>
-            <span style={{color:backendOnline?'#22c55e':'#f87171'}}>{backendOnline?'Backend Online · Cloud Mode':'Offline â€” Local'}</span>
+            <span style={{color:backendOnline?'#22c55e':'#f87171'}}>{backendOnline?'Backend Online Â· Cloud Mode':'Offline â€” Local'}</span>
             {syncStatus==='syncing'&&<span style={{color:'#fbbf24'}}>âŸ³</span>}
             {syncStatus==='synced'&&<span style={{color:'#4ade80'}}>âœ“</span>}
           </div>
           <div className='topbar-status'>{home?.status ?? 'running'}</div>
+          <span style={{fontSize:11,color:'#64748b',padding:'4px 8px',background:'#1e293b',borderRadius:6}}>ðŸ‘¤ {authUser}</span>
           <button className='btn-sm wa' onClick={()=>setShowWaConfig(true)}>âš™ WhatsApp</button>
           <button className='btn-sm orange' onClick={()=>{setScanTarget('ticket');startScanner();}}>ðŸ“· Scanner</button>
           <button className='btn-refresh' onClick={loadData}>{loading ? 'Loading...' : 'Refresh'}</button>
+          <button className='btn-sm red' onClick={onLogout}>Sign Out</button>
         </div>
       </div>
 
@@ -997,7 +1091,7 @@ export default function App() {
             </div>
             <div className='divider'/>
             <div className='sidebar-section'>
-              <div className='sidebar-label'>Android Phone (Local ADB only)</div>
+              <div className='sidebar-label'>Android Phone</div>
               <div className='info-row'><span className='info-key'>ADB</span><span className='info-val'><span className={'badge '+(phoneOk?'badge-green':'badge-red')}>{phoneOk?'Connected':'Disconnected'}</span></span></div>
               <div className='info-row'><span className='info-key'>Brand</span><span className='info-val'>{phone?.brand??'â€”'}</span></div>
               <div className='info-row'><span className='info-key'>Model</span><span className='info-val'>{phone?.model??'â€”'}</span></div>
@@ -1687,4 +1781,5 @@ export default function App() {
     </>
   );
 }
+
 
