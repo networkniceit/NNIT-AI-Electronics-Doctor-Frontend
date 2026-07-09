@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -38,7 +38,7 @@ interface Appointment {
 
 type Tab = 'dashboard' | 'customers' | 'tickets' | 'invoices' | 'inventory' | 'analytics' | 'calendar';
 
-// â”€â”€ LOGIN SCREEN â”€â”€
+// ── LOGIN SCREEN ──
 function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => void }) {
   const [mode, setMode] = useState<'login'|'register'>('login');
   const [username, setUsername] = useState('');
@@ -62,7 +62,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => vo
           localStorage.setItem('nnit_user', username);
           onLogin(token, username);
         } else {
-          // Backend login succeeded but no token â€” allow access anyway
+          // Backend login succeeded but no token — allow access anyway
           localStorage.setItem('nnit_user', username);
           onLogin('local', username);
         }
@@ -77,7 +77,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => vo
     <div style={{minHeight:'100vh',background:'#0b0f1a',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Inter','Segoe UI',system-ui,sans-serif"}}>
       <div style={{width:380,background:'#111827',border:'1px solid #1e2d40',borderRadius:14,padding:36,display:'flex',flexDirection:'column',gap:18}}>
         <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
-          <div style={{width:42,height:42,background:'linear-gradient(135deg,#3b82f6,#8b5cf6)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>ðŸ”¬</div>
+          <div style={{width:42,height:42,background:'linear-gradient(135deg,#3b82f6,#8b5cf6)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>🔬</div>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:'#f1f5f9'}}>NNIT AI Electronics Doctor Pro</div>
             <div style={{fontSize:11,color:'#475569'}}>Network Nice IT (NNIT)</div>
@@ -112,7 +112,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => vo
 }
 
 export default function App() {
-  // â”€â”€ AUTH â”€â”€
+  // ── AUTH ──
   const [authed, setAuthed] = useState(() => !!localStorage.getItem('nnit_token'));
   const [authUser, setAuthUser] = useState(() => localStorage.getItem('nnit_user') ?? '');
 
@@ -191,17 +191,17 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [inventorySearch, setInventorySearch] = useState('');
 
-  // â”€â”€ FEATURE 1: Backend sync state â”€â”€
+  // ── FEATURE 1: Backend sync state ──
   const [backendOnline, setBackendOnline] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle'|'syncing'|'synced'|'error'>('idle');
 
-  // â”€â”€ FEATURE 2: WhatsApp state â”€â”€
+  // ── FEATURE 2: WhatsApp state ──
   const [waPhone] = useState(() => localStorage.getItem('nnit_wa_phone') ?? '');
   const [waApiKey, setWaApiKey] = useState(() => localStorage.getItem('nnit_wa_key') ?? '');
   const [waInstanceId, setWaInstanceId] = useState(() => localStorage.getItem('nnit_wa_instance') ?? '');
   const [showWaConfig, setShowWaConfig] = useState(false);
 
-  // â”€â”€ FEATURE 3: Barcode scanner state â”€â”€
+  // ── FEATURE 3: Barcode scanner state ──
   const [scannerActive, setScannerActive] = useState(false);
   const [scannedCode, setScannedCode] = useState('');
   const [scanTarget, setScanTarget] = useState<'ticket'|'inventory'>('ticket');
@@ -209,7 +209,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   const streamRef = useRef<MediaStream|null>(null);
 
 
-  // â”€â”€ FEATURE 4: Calendar/Appointments state â”€â”€
+  // ── FEATURE 4: Calendar/Appointments state ──
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
     try { return JSON.parse(localStorage.getItem('nnit_appointments') ?? '[]'); } catch { return []; }
   });
@@ -226,7 +226,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   function saveInventory(list: InventoryItem[]) { setInventory(list); localStorage.setItem('nnit_inventory', JSON.stringify(list)); }
   function saveAppointments(list: Appointment[]) { setAppointments(list); localStorage.setItem('nnit_appointments', JSON.stringify(list)); }
 
-  // â”€â”€ FEATURE 1: Backend sync â”€â”€
+  // ── FEATURE 1: Backend sync ──
   async function syncToBackend(type: 'customers'|'tickets', data: any[]) {
     setSyncStatus('syncing');
     try {
@@ -238,7 +238,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
       setTimeout(() => setSyncStatus('idle'), 3000);
     } catch {
       setSyncStatus('error');
-      notify('Backend sync failed â€” data saved locally.', 'warning');
+      notify('Backend sync failed — data saved locally.', 'warning');
     }
   }
 
@@ -295,7 +295,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     } catch { /* backend may not have these yet */ }
   }
 
-  // â”€â”€ FEATURE 2: WhatsApp notifications â”€â”€
+  // ── FEATURE 2: WhatsApp notifications ──
   function saveWaConfig() {
     localStorage.setItem('nnit_wa_phone', waPhone);
     localStorage.setItem('nnit_wa_key', waApiKey);
@@ -306,7 +306,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
 
   async function sendWhatsApp(toPhone: string, message: string) {
     if (!waApiKey || !waInstanceId) {
-      notify('Configure WhatsApp first (âš™ button top-right).', 'warning');
+      notify('Configure WhatsApp first (⚙ button top-right).', 'warning');
       return;
     }
     const phone = toPhone.replace(/\D/g, '');
@@ -318,7 +318,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         to: `+${phone}`,
         body: message
       });
-      notify('WhatsApp message sent! ðŸ“±', 'success');
+      notify('WhatsApp message sent! 📱', 'success');
     } catch {
       notify('WhatsApp send failed. Check your API config.', 'error');
     }
@@ -327,16 +327,16 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   function sendTicketStatusWA(t: Ticket) {
     const c = customers.find(x => x.id === t.customerId);
     const phone = c?.phone ?? '';
-    const msg = `Hello ${t.customerName || 'Customer'},\n\nYour repair update from NNIT AI Electronics Doctor:\n\nðŸ“± Device: ${t.device} ${t.model}\nðŸ”§ Fault: ${t.fault}\nðŸ“‹ Status: *${t.status}*\n${t.cost ? `ðŸ’° Est. Cost: ${t.cost}\n` : ''}${t.techNotes ? `ðŸ“ Notes: ${t.techNotes}\n` : ''}\nThank you for choosing Network Nice IT (NNIT)!\nnetworkniceit@gmail.com`;
+    const msg = `Hello ${t.customerName || 'Customer'},\n\nYour repair update from NNIT AI Electronics Doctor:\n\n📱 Device: ${t.device} ${t.model}\n🔧 Fault: ${t.fault}\n📋 Status: *${t.status}*\n${t.cost ? `💰 Est. Cost: ${t.cost}\n` : ''}${t.techNotes ? `📝 Notes: ${t.techNotes}\n` : ''}\nThank you for choosing Network Nice IT (NNIT)!\nnetworkniceit@gmail.com`;
     sendWhatsApp(phone, msg);
   }
 
   function sendInvoiceWA(inv: Invoice) {
-    const msg = `Hello ${inv.customerName},\n\nYour invoice from NNIT AI Electronics Doctor:\n\nðŸ§¾ Invoice: *${inv.id}*\nðŸ“± Device: ${inv.device}\nðŸ”§ Service: ${inv.fault}\nðŸ’° Total: *${inv.totalCost}*\nðŸ“… Due: ${inv.dueDate || 'On receipt'}\n\nPlease contact us to arrange payment.\nnetworkniceit@gmail.com`;
+    const msg = `Hello ${inv.customerName},\n\nYour invoice from NNIT AI Electronics Doctor:\n\n🧾 Invoice: *${inv.id}*\n📱 Device: ${inv.device}\n🔧 Service: ${inv.fault}\n💰 Total: *${inv.totalCost}*\n📅 Due: ${inv.dueDate || 'On receipt'}\n\nPlease contact us to arrange payment.\nnetworkniceit@gmail.com`;
     sendWhatsApp(inv.customerPhone, msg);
   }
 
-  // â”€â”€ FEATURE 3: Barcode/QR scanner â”€â”€
+  // ── FEATURE 3: Barcode/QR scanner ──
   async function startScanner() {
     setScannerActive(true);
     try {
@@ -393,7 +393,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     return () => window.removeEventListener('keydown', onKey);
   }, [scannerActive, scanTarget]);
 
-  // â”€â”€ FEATURE 4: Calendar/Appointments CRUD â”€â”€
+  // ── FEATURE 4: Calendar/Appointments CRUD ──
   function submitAppt() {
     if (!apptForm.date || !apptForm.time) { notify('Date and time are required.', 'error'); return; }
     const now = new Date().toLocaleString();
@@ -420,7 +420,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   }
   function sendApptWA(a: Appointment) {
     const c = customers.find(x => x.id === a.customerId);
-    const msg = `Hello ${a.customerName},\n\nYour repair appointment at NNIT AI Electronics Doctor:\n\nðŸ“… Date: *${a.date}*\nðŸ• Time: *${a.time}*\nâ± Duration: ~${a.duration} min\nðŸ”§ Type: ${a.type}\n${a.notes ? `ðŸ“ Notes: ${a.notes}` : ''}\n\nSee you soon!\nnetworkniceit@gmail.com`;
+    const msg = `Hello ${a.customerName},\n\nYour repair appointment at NNIT AI Electronics Doctor:\n\n📅 Date: *${a.date}*\n🕐 Time: *${a.time}*\n⏱ Duration: ~${a.duration} min\n🔧 Type: ${a.type}\n${a.notes ? `📝 Notes: ${a.notes}` : ''}\n\nSee you soon!\nnetworkniceit@gmail.com`;
     sendWhatsApp(c?.phone ?? '', msg);
   }
 
@@ -441,7 +441,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     return appointments.filter(a => a.date === dateStr);
   }
 
-  // â”€â”€ FEATURE 5: Export â”€â”€
+  // ── FEATURE 5: Export ──
   function exportToCSV(data: any[], filename: string) {
     if (data.length === 0) { notify('Nothing to export.', 'warning'); return; }
     const keys = Object.keys(data[0]);
@@ -544,10 +544,10 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     const total = (labor + parts).toFixed(2);
     const now = new Date().toLocaleString();
     if (editingInvoiceId) {
-      saveInvoices(invoices.map(i => i.id === editingInvoiceId ? { ...i, ...invoiceForm, totalCost: 'â‚¬'+total } : i));
+      saveInvoices(invoices.map(i => i.id === editingInvoiceId ? { ...i, ...invoiceForm, totalCost: '€'+total } : i));
       setEditingInvoiceId(null); notify('Invoice updated.');
     } else {
-      saveInvoices([{ ...invoiceForm, id: 'INV-'+Date.now().toString().slice(-6), totalCost:'â‚¬'+total, createdAt: now }, ...invoices]);
+      saveInvoices([{ ...invoiceForm, id: 'INV-'+Date.now().toString().slice(-6), totalCost:'€'+total, createdAt: now }, ...invoices]);
       notify('Invoice created.');
     }
     setInvoiceForm(blankInvoice);
@@ -571,7 +571,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(18);
     doc.text('NNIT AI Electronics Doctor Pro', 20, 15);
     doc.setFontSize(10); doc.setFont('helvetica','normal');
-    doc.text('Network Nice IT (NNIT) â€” Invoice', 20, 23);
+    doc.text('Network Nice IT (NNIT) — Invoice', 20, 23);
     doc.text('networkniceit@gmail.com', 20, 30);
     y = 50; doc.setTextColor(0,0,0);
     doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text('INVOICE', 150, y); y += 6;
@@ -592,15 +592,15 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     doc.setFont('helvetica','normal');
     doc.text('Device: '+inv.device+' '+inv.model, 20, y); y += lh;
     doc.text('Fault: '+inv.fault, 20, y); y += lh+4;
-    if(inv.laborCost) { doc.text('Labour Cost', 20, y); doc.text('â‚¬'+inv.laborCost, 170, y); y += lh; }
-    if(inv.partsCost) { doc.text('Parts Cost', 20, y); doc.text('â‚¬'+inv.partsCost, 170, y); y += lh; }
+    if(inv.laborCost) { doc.text('Labour Cost', 20, y); doc.text('€'+inv.laborCost, 170, y); y += lh; }
+    if(inv.partsCost) { doc.text('Parts Cost', 20, y); doc.text('€'+inv.partsCost, 170, y); y += lh; }
     y += 4; doc.setFillColor(17,24,39); doc.rect(130,y-5,65,12,'F');
     doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
     doc.text('TOTAL: '+inv.totalCost, 135, y+3);
     if(inv.notes) { y += 20; doc.setTextColor(0,0,0); doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.text('Notes: '+inv.notes, 20, y); }
     doc.setFillColor(17,24,39); doc.rect(0,280,210,20,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text('Generated by NNIT AI Electronics Doctor Pro â€” Network Nice IT (NNIT)', 20, 292);
+    doc.text('Generated by NNIT AI Electronics Doctor Pro — Network Nice IT (NNIT)', 20, 292);
     doc.save('Invoice_'+inv.id+'.pdf');
     notify('Invoice PDF downloaded.');
   }
@@ -631,7 +631,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     const updated = inventory.map(i => i.id === id ? { ...i, quantity: Math.max(0, i.quantity + delta), updatedAt: now } : i);
     saveInventory(updated);
     const item = updated.find(i => i.id === id);
-    if (item && item.quantity <= item.minStock) notify(`âš  Low stock: ${item.name} (${item.quantity} left)`, 'warning');
+    if (item && item.quantity <= item.minStock) notify(`⚠ Low stock: ${item.name} (${item.quantity} left)`, 'warning');
   }
 
   function handlePrintTicket(t: Ticket) {
@@ -661,8 +661,8 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   const lowStockItems = inventory.filter(i => i.quantity <= i.minStock);
 
   // Analytics
-  const totalRevenue = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (parseFloat(i.totalCost.replace('â‚¬','')) || 0), 0);
-  const pendingRevenue = invoices.filter(i => i.status === 'Sent' || i.status === 'Draft').reduce((sum, i) => sum + (parseFloat(i.totalCost.replace('â‚¬','')) || 0), 0);
+  const totalRevenue = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (parseFloat(i.totalCost.replace('€','')) || 0), 0);
+  const pendingRevenue = invoices.filter(i => i.status === 'Sent' || i.status === 'Draft').reduce((sum, i) => sum + (parseFloat(i.totalCost.replace('€','')) || 0), 0);
   const faultCounts: Record<string,number> = {};
   tickets.forEach(t => { const k = t.device||'Unknown'; faultCounts[k] = (faultCounts[k]||0)+1; });
   const topDevices = Object.entries(faultCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -723,13 +723,13 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     const lh = 8; let y = 20;
     const line = (label: string, value: any) => {
       doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(label+':', 20, y);
-      doc.setFont('helvetica','normal'); doc.text(String(value ?? 'â€”'), 75, y); y += lh;
+      doc.setFont('helvetica','normal'); doc.text(String(value ?? '—'), 75, y); y += lh;
     };
     doc.setFillColor(17,24,39); doc.rect(0,0,210,30,'F');
     doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(16);
     doc.text('NNIT AI Electronics Doctor Pro', 20, 15);
     doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text('Network Nice IT (NNIT) â€” Repair Report', 20, 23);
+    doc.text('Network Nice IT (NNIT) — Repair Report', 20, 23);
     y = 45; doc.setTextColor(0,0,0);
     doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Report Details', 20, y); y += lh+2; doc.setFontSize(10);
     line('Report ID', report.report_id); line('Date', report.date); line('Technician', report.technician); line('Status', report.status);
@@ -740,7 +740,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     line('Estimated Cost', report.estimated_cost); line('Repair Time', report.estimated_repair_time);
     doc.setFillColor(17,24,39); doc.rect(0,280,210,20,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(8);
-    doc.text('Generated by NNIT AI Electronics Doctor Pro â€” Network Nice IT (NNIT)', 20, 290);
+    doc.text('Generated by NNIT AI Electronics Doctor Pro — Network Nice IT (NNIT)', 20, 290);
     doc.save('NNIT_Report_'+report.report_id+'.pdf');
     notify('Report PDF downloaded.');
   }
@@ -756,8 +756,8 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
   );
   const phoneTemp = phone?.temperature
     ? (typeof phone.temperature === 'number' && phone.temperature > 100
-        ? (phone.temperature / 10).toFixed(1)+'Â°C'
-        : phone.temperature+'Â°C')
+        ? (phone.temperature / 10).toFixed(1)+'°C'
+        : phone.temperature+'°C')
     : 'Unknown';
 
   const statusColor: Record<string,string> = { 'Open':'#60a5fa','In Progress':'#fbbf24','Completed':'#4ade80','Cancelled':'#f87171' };
@@ -980,20 +980,20 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
       {/* PRINT TICKET */}
       {printTicket && (
         <div className='print-ticket'>
-          <h1>ðŸ”¬ NNIT AI Electronics Doctor Pro â€” Repair Job Card</h1>
+          <h1>🔬 NNIT AI Electronics Doctor Pro — Repair Job Card</h1>
           <div className='pt-section'>Customer & Device</div>
-          <div className='pt-row'><span className='pt-label'>Customer:</span><span>{printTicket.customerName || 'â€”'}</span></div>
+          <div className='pt-row'><span className='pt-label'>Customer:</span><span>{printTicket.customerName || '—'}</span></div>
           <div className='pt-row'><span className='pt-label'>Device:</span><span>{printTicket.device} {printTicket.model}</span></div>
           <div className='pt-section'>Repair Details</div>
           <div className='pt-row'><span className='pt-label'>Ticket #:</span><span>{printTicket.id.slice(-6)}</span></div>
           <div className='pt-row'><span className='pt-label'>Fault:</span><span>{printTicket.fault}</span></div>
           <div className='pt-row'><span className='pt-label'>Priority:</span><span>{printTicket.priority}</span></div>
           <div className='pt-row'><span className='pt-label'>Status:</span><span>{printTicket.status}</span></div>
-          <div className='pt-row'><span className='pt-label'>Est. Cost:</span><span>{printTicket.cost || 'â€”'}</span></div>
+          <div className='pt-row'><span className='pt-label'>Est. Cost:</span><span>{printTicket.cost || '—'}</span></div>
           <div className='pt-row'><span className='pt-label'>Created:</span><span>{printTicket.createdAt}</span></div>
           <div className='pt-section'>Technician Notes</div>
           <div style={{fontSize:'13px'}}>{printTicket.techNotes || 'No notes.'}</div>
-          <div style={{marginTop:'32px',fontSize:'11px',color:'#666'}}>Network Nice IT (NNIT) Â· networkniceit@gmail.com</div>
+          <div style={{marginTop:'32px',fontSize:'11px',color:'#666'}}>Network Nice IT (NNIT) · networkniceit@gmail.com</div>
         </div>
       )}
 
@@ -1001,8 +1001,8 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
       {showWaConfig && (
         <div className='modal-overlay' onClick={()=>setShowWaConfig(false)}>
           <div className='modal' onClick={e=>e.stopPropagation()}>
-            <h3>ðŸ“± WhatsApp API Config (UltraMsg)</h3>
-            <p style={{fontSize:'12px',color:'#64748b'}}>Get your Instance ID and Token from <strong style={{color:'#60a5fa'}}>ultramsg.com</strong> â€” free plan available.</p>
+            <h3>📱 WhatsApp API Config (UltraMsg)</h3>
+            <p style={{fontSize:'12px',color:'#64748b'}}>Get your Instance ID and Token from <strong style={{color:'#60a5fa'}}>ultramsg.com</strong> — free plan available.</p>
             <div className='form-field'><label className='form-label'>Instance ID</label><input className='form-input' placeholder='instance12345' value={waInstanceId} onChange={e=>setWaInstanceId(e.target.value)}/></div>
             <div className='form-field'><label className='form-label'>API Token</label><input className='form-input' placeholder='your_token_here' value={waApiKey} onChange={e=>setWaApiKey(e.target.value)}/></div>
             <div style={{display:'flex',gap:'8px'}}>
@@ -1016,25 +1016,25 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
       {/* BARCODE SCANNER OVERLAY */}
       {scannerActive && (
         <div className='scanner-overlay'>
-          <div style={{color:'#f1f5f9',fontSize:'16px',fontWeight:700}}>ðŸ“· Barcode / QR Scanner</div>
+          <div style={{color:'#f1f5f9',fontSize:'16px',fontWeight:700}}>📷 Barcode / QR Scanner</div>
           <div style={{fontSize:'12px',color:'#64748b'}}>Scanning for: <strong style={{color:'#60a5fa'}}>{scanTarget === 'ticket' ? 'Device (Ticket)' : 'Part (Inventory)'}</strong></div>
           <div className='scanner-frame'>
             <video ref={videoRef} autoPlay playsInline muted style={{width:'100%',height:'100%',objectFit:'cover'}}/>
             <div className='scanner-line'/>
           </div>
-          <div style={{fontSize:'12px',color:'#475569'}}>USB scanner? Just scan â€” it types automatically.</div>
+          <div style={{fontSize:'12px',color:'#475569'}}>USB scanner? Just scan — it types automatically.</div>
           <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
             <input className='form-input' style={{width:'220px'}} placeholder='Or type/paste barcode here' value={scannedCode} onChange={e=>setScannedCode(e.target.value)} onKeyDown={e=>e.key==='Enter'&&applyBarcode(scannedCode)} autoFocus/>
             <button className='btn-sm green' onClick={()=>applyBarcode(scannedCode)}>Apply</button>
           </div>
-          <button className='btn-sm red' onClick={stopScanner}>âœ• Close Scanner</button>
+          <button className='btn-sm red' onClick={stopScanner}>✕ Close Scanner</button>
         </div>
       )}
 
       {/* TOPBAR */}
       <div className='topbar'>
         <div className='topbar-brand'>
-          <div className='topbar-logo'>ðŸ”¬</div>
+          <div className='topbar-logo'>🔬</div>
           <div>
             <div className='topbar-name'>NNIT AI Electronics Doctor Pro</div>
             <div className='topbar-sub'>Network Nice IT (NNIT) &middot; v{home?.version ?? '1.0.0'}</div>
@@ -1043,14 +1043,14 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         <div className='topbar-right'>
           <div className='sync-pill'>
             <div className='backend-dot' style={{background:backendOnline?'#22c55e':'#f87171'}}/>
-            <span style={{color:backendOnline?'#22c55e':'#f87171'}}>{backendOnline?'Backend Online Â· Cloud Mode':'Offline â€” Local'}</span>
-            {syncStatus==='syncing'&&<span style={{color:'#fbbf24'}}>âŸ³</span>}
-            {syncStatus==='synced'&&<span style={{color:'#4ade80'}}>âœ“</span>}
+            <span style={{color:backendOnline?'#22c55e':'#f87171'}}>{backendOnline?'Backend Online · Cloud Mode':'Offline — Local'}</span>
+            {syncStatus==='syncing'&&<span style={{color:'#fbbf24'}}>⟳</span>}
+            {syncStatus==='synced'&&<span style={{color:'#4ade80'}}>✓</span>}
           </div>
           <div className='topbar-status'>{home?.status ?? 'running'}</div>
-          <span style={{fontSize:11,color:'#64748b',padding:'4px 8px',background:'#1e293b',borderRadius:6}}>ðŸ‘¤ {authUser}</span>
-          <button className='btn-sm wa' onClick={()=>setShowWaConfig(true)}>âš™ WhatsApp</button>
-          <button className='btn-sm orange' onClick={()=>{setScanTarget('ticket');startScanner();}}>ðŸ“· Scanner</button>
+          <span style={{fontSize:11,color:'#64748b',padding:'4px 8px',background:'#1e293b',borderRadius:6}}>👤 {authUser}</span>
+          <button className='btn-sm wa' onClick={()=>setShowWaConfig(true)}>⚙ WhatsApp</button>
+          <button className='btn-sm orange' onClick={()=>{setScanTarget('ticket');startScanner();}}>📷 Scanner</button>
           <button className='btn-refresh' onClick={loadData}>{loading ? 'Loading...' : 'Refresh'}</button>
           <button className='btn-sm red' onClick={onLogout}>Sign Out</button>
         </div>
@@ -1077,28 +1077,28 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         <button className={'tab'+(tab==='analytics'?' active':'')} onClick={()=>setTab('analytics')}>Analytics</button>
       </div>
 
-      {/* â”€â”€ DASHBOARD â”€â”€ */}
+      {/* ── DASHBOARD ── */}
       {tab==='dashboard' && (
         <div className='dashboard'>
           <aside className='sidebar'>
             <div className='sidebar-section'>
               <div className='sidebar-label'>Computer</div>
-              <div className='info-row'><span className='info-key'>Host</span><span className='info-val'>{scan?.computer??'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>OS</span><span className='info-val'>{scan?.system??'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>CPU</span><span className='info-val'>{scan?.processor??'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>RAM</span><span className='info-val'>{scan?.ram_gb!=null?scan.ram_gb+' GB':'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>Battery</span><span className='info-val'>{scan?.battery!=null?scan.battery+'%':'â€”'}</span></div>
+              <div className='info-row'><span className='info-key'>Host</span><span className='info-val'>{scan?.computer??'—'}</span></div>
+              <div className='info-row'><span className='info-key'>OS</span><span className='info-val'>{scan?.system??'—'}</span></div>
+              <div className='info-row'><span className='info-key'>CPU</span><span className='info-val'>{scan?.processor??'—'}</span></div>
+              <div className='info-row'><span className='info-key'>RAM</span><span className='info-val'>{scan?.ram_gb!=null?scan.ram_gb+' GB':'—'}</span></div>
+              <div className='info-row'><span className='info-key'>Battery</span><span className='info-val'>{scan?.battery!=null?scan.battery+'%':'—'}</span></div>
             </div>
             <div className='divider'/>
             <div className='sidebar-section'>
               <div className='sidebar-label'>Android Phone</div>
               <div className='info-row'><span className='info-key'>ADB</span><span className='info-val'><span className={'badge '+(phoneOk?'badge-green':'badge-red')}>{phoneOk?'Connected':'Disconnected'}</span></span></div>
-              <div className='info-row'><span className='info-key'>Brand</span><span className='info-val'>{phone?.brand??'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>Model</span><span className='info-val'>{phone?.model??'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>Android</span><span className='info-val'>{phone?.android_version??'â€”'}</span></div>
-              <div className='info-row'><span className='info-key'>Battery</span><span className='info-val'>{phone?.battery!=null?phone.battery+'%':'â€”'}</span></div>
+              <div className='info-row'><span className='info-key'>Brand</span><span className='info-val'>{phone?.brand??'—'}</span></div>
+              <div className='info-row'><span className='info-key'>Model</span><span className='info-val'>{phone?.model??'—'}</span></div>
+              <div className='info-row'><span className='info-key'>Android</span><span className='info-val'>{phone?.android_version??'—'}</span></div>
+              <div className='info-row'><span className='info-key'>Battery</span><span className='info-val'>{phone?.battery!=null?phone.battery+'%':'—'}</span></div>
               <div className='info-row'><span className='info-key'>Temp</span><span className='info-val'>{phoneTemp}</span></div>
-              <div className='info-row'><span className='info-key'>Voltage</span><span className='info-val'>{phone?.voltage?phone.voltage+' mV':'â€”'}</span></div>
+              <div className='info-row'><span className='info-key'>Voltage</span><span className='info-val'>{phone?.voltage?phone.voltage+' mV':'—'}</span></div>
             </div>
             <div className='divider'/>
             <div className='sidebar-section'>
@@ -1112,12 +1112,12 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
             <div className='stat-row'>
               <div className='stat-card'>
                 <div className='stat-label'>CPU Usage</div>
-                <div className='stat-value' style={{color:cpuUsage>80?'#f87171':'#4ade80'}}>{cpuUsage!=null?cpuUsage+'%':'â€”'}</div>
+                <div className='stat-value' style={{color:cpuUsage>80?'#f87171':'#4ade80'}}>{cpuUsage!=null?cpuUsage+'%':'—'}</div>
                 <div className='stat-sub'>Real-time</div>
               </div>
               <div className='stat-card'>
                 <div className='stat-label'>RAM Usage</div>
-                <div className='stat-value' style={{color:ramUsage>80?'#f87171':'#60a5fa'}}>{ramUsage!=null?ramUsage+'%':'â€”'}</div>
+                <div className='stat-value' style={{color:ramUsage>80?'#f87171':'#60a5fa'}}>{ramUsage!=null?ramUsage+'%':'—'}</div>
                 <div className='stat-sub'>Real-time</div>
               </div>
               <div className='stat-card'>
@@ -1140,9 +1140,9 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                 <div className='panel-body'>
                   {diagnosis?(
                     <>
-                      <div className='diag-row'><span className='diag-label'>CPU</span><div className='diag-bar-bg'><div className='diag-bar-fill' style={{width:(cpuUsage??0)+'%',background:cpuUsage>80?'#ef4444':'#3b82f6'}}/></div><span className='diag-pct'>{cpuUsage!=null?cpuUsage+'%':'â€”'}</span></div>
-                      <div className='diag-row'><span className='diag-label'>RAM</span><div className='diag-bar-bg'><div className='diag-bar-fill' style={{width:(ramUsage??0)+'%',background:ramUsage>80?'#ef4444':'#8b5cf6'}}/></div><span className='diag-pct'>{ramUsage!=null?ramUsage+'%':'â€”'}</span></div>
-                      {faults.length>0&&<div className='fault-list'>{faults.map((f:string,i:number)=><div key={i} className='fault-item'>âš  {f}</div>)}</div>}
+                      <div className='diag-row'><span className='diag-label'>CPU</span><div className='diag-bar-bg'><div className='diag-bar-fill' style={{width:(cpuUsage??0)+'%',background:cpuUsage>80?'#ef4444':'#3b82f6'}}/></div><span className='diag-pct'>{cpuUsage!=null?cpuUsage+'%':'—'}</span></div>
+                      <div className='diag-row'><span className='diag-label'>RAM</span><div className='diag-bar-bg'><div className='diag-bar-fill' style={{width:(ramUsage??0)+'%',background:ramUsage>80?'#ef4444':'#8b5cf6'}}/></div><span className='diag-pct'>{ramUsage!=null?ramUsage+'%':'—'}</span></div>
+                      {faults.length>0&&<div className='fault-list'>{faults.map((f:string,i:number)=><div key={i} className='fault-item'>⚠ {f}</div>)}</div>}
                       {diagnosis.recommendations?.length>0&&<div className='step-list' style={{marginTop:'12px'}}>{diagnosis.recommendations.map((r:string,i:number)=><div key={i} className='step-item'><div className='step-num'>{i+1}</div><span>{r}</span></div>)}</div>}
                     </>
                   ):<div className='empty-msg'>Loading diagnosis...</div>}
@@ -1197,29 +1197,29 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                   )}
                 </div>
                 <div className='panel-body'>
-                  {!analysis?(<div className='analysis-empty'><div style={{fontSize:'32px',marginBottom:'8px'}}>ðŸ”</div>Select a file above and click <strong>Analyze</strong> to get started.</div>):(
+                  {!analysis?(<div className='analysis-empty'><div style={{fontSize:'32px',marginBottom:'8px'}}>🔍</div>Select a file above and click <strong>Analyze</strong> to get started.</div>):(
                     <>
                       <div className='analysis-grid'>
-                        <div className='analysis-field'><div className='analysis-field-label'>File</div><div className='analysis-field-value'>{analysis.filename??'â€”'}</div></div>
-                        <div className='analysis-field'><div className='analysis-field-label'>Type</div><div className='analysis-field-value'>{analysis.type??'â€”'}</div></div>
-                        <div className='analysis-field'><div className='analysis-field-label'>Device</div><div className='analysis-field-value'>{analysis.device??'â€”'}</div></div>
-                        <div className='analysis-field'><div className='analysis-field-label'>Confidence</div><div className='analysis-field-value'>{analysis.confidence!=null?analysis.confidence+'%':'â€”'}</div></div>
+                        <div className='analysis-field'><div className='analysis-field-label'>File</div><div className='analysis-field-value'>{analysis.filename??'—'}</div></div>
+                        <div className='analysis-field'><div className='analysis-field-label'>Type</div><div className='analysis-field-value'>{analysis.type??'—'}</div></div>
+                        <div className='analysis-field'><div className='analysis-field-label'>Device</div><div className='analysis-field-value'>{analysis.device??'—'}</div></div>
+                        <div className='analysis-field'><div className='analysis-field-label'>Confidence</div><div className='analysis-field-value'>{analysis.confidence!=null?analysis.confidence+'%':'—'}</div></div>
                       </div>
-                      {analysis.faults?.length>0&&(<><div style={{fontSize:'11px',color:'#475569',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'.8px'}}>Faults</div><div className='fault-list' style={{marginBottom:'14px'}}>{analysis.faults.map((f:string,i:number)=><div key={i} className='fault-item'>âš  {f}</div>)}</div></>)}
+                      {analysis.faults?.length>0&&(<><div style={{fontSize:'11px',color:'#475569',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'.8px'}}>Faults</div><div className='fault-list' style={{marginBottom:'14px'}}>{analysis.faults.map((f:string,i:number)=><div key={i} className='fault-item'>⚠ {f}</div>)}</div></>)}
                       {analysis.repair_steps?.length>0&&(<><div style={{fontSize:'11px',color:'#475569',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'.8px'}}>Repair Steps</div><div className='step-list' style={{marginBottom:'14px'}}>{analysis.repair_steps.map((s:string,i:number)=><div key={i} className='step-item'><div className='step-num'>{i+1}</div><span>{s}</span></div>)}</div></>)}
                       {analysis.report&&(
                         <>
-                          <div style={{fontSize:'11px',color:'#475569',margin:'16px 0 8px',textTransform:'uppercase',letterSpacing:'.8px',borderTop:'1px solid #1e2d40',paddingTop:'16px'}}>Repair Report Â· {analysis.report.report_id}</div>
+                          <div style={{fontSize:'11px',color:'#475569',margin:'16px 0 8px',textTransform:'uppercase',letterSpacing:'.8px',borderTop:'1px solid #1e2d40',paddingTop:'16px'}}>Repair Report · {analysis.report.report_id}</div>
                           <div className='report-grid'>
-                            <div className='report-field'><div className='report-field-label'>Device</div><div className='report-field-value'>{analysis.report.device??'â€”'}</div></div>
+                            <div className='report-field'><div className='report-field-label'>Device</div><div className='report-field-value'>{analysis.report.device??'—'}</div></div>
                             <div className='report-field'><div className='report-field-label'>Fault</div><div className='report-field-value'>{analysis.report.diagnosis?.fault??'No fault data'}</div></div>
                             <div className='report-field'><div className='report-field-label'>Confidence</div><div className='report-field-value'>{analysis.report.diagnosis?.confidence??0}%</div></div>
-                            <div className='report-field'><div className='report-field-label'>Severity</div><div className='report-field-value'>{analysis.report.diagnosis?.severity??'â€”'}</div></div>
-                            <div className='report-field'><div className='report-field-label'>Est. Cost</div><div className='report-field-value' style={{color:'#4ade80'}}>{analysis.report.estimated_cost??'â€”'}</div></div>
-                            <div className='report-field'><div className='report-field-label'>Repair Time</div><div className='report-field-value'>{analysis.report.estimated_repair_time??'â€”'}</div></div>
-                            <div className='report-field'><div className='report-field-label'>Technician</div><div className='report-field-value'>{analysis.report.technician??'â€”'}</div></div>
-                            <div className='report-field'><div className='report-field-label'>Date</div><div className='report-field-value'>{analysis.report.date??'â€”'}</div></div>
-                            <div className='report-field'><div className='report-field-label'>Status</div><div className='report-field-value'><span className='badge badge-green'>{analysis.report.status??'â€”'}</span></div></div>
+                            <div className='report-field'><div className='report-field-label'>Severity</div><div className='report-field-value'>{analysis.report.diagnosis?.severity??'—'}</div></div>
+                            <div className='report-field'><div className='report-field-label'>Est. Cost</div><div className='report-field-value' style={{color:'#4ade80'}}>{analysis.report.estimated_cost??'—'}</div></div>
+                            <div className='report-field'><div className='report-field-label'>Repair Time</div><div className='report-field-value'>{analysis.report.estimated_repair_time??'—'}</div></div>
+                            <div className='report-field'><div className='report-field-label'>Technician</div><div className='report-field-value'>{analysis.report.technician??'—'}</div></div>
+                            <div className='report-field'><div className='report-field-label'>Date</div><div className='report-field-value'>{analysis.report.date??'—'}</div></div>
+                            <div className='report-field'><div className='report-field-label'>Status</div><div className='report-field-value'><span className='badge badge-green'>{analysis.report.status??'—'}</span></div></div>
                           </div>
                         </>
                       )}
@@ -1249,15 +1249,15 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         </div>
       )}
 
-      {/* â”€â”€ CUSTOMERS â”€â”€ */}
+      {/* ── CUSTOMERS ── */}
       {tab==='customers'&&(
         <div className='page'>
           {/* Export bar */}
           <div className='export-bar'>
             <span className='export-label'>Export Customers:</span>
-            <button className='btn-sm green' onClick={()=>exportToXLSX(customers,'Customers','NNIT_Customers.xlsx')}>â¬‡ Excel</button>
-            <button className='btn-sm gray' onClick={()=>exportToCSV(customers,'NNIT_Customers.csv')}>â¬‡ CSV</button>
-            {backendOnline&&<button className='btn-sm' onClick={()=>syncToBackend('customers',customers)}>â˜ Sync to Backend</button>}
+            <button className='btn-sm green' onClick={()=>exportToXLSX(customers,'Customers','NNIT_Customers.xlsx')}>⬇ Excel</button>
+            <button className='btn-sm gray' onClick={()=>exportToCSV(customers,'NNIT_Customers.csv')}>⬇ CSV</button>
+            {backendOnline&&<button className='btn-sm' onClick={()=>syncToBackend('customers',customers)}>☁ Sync to Backend</button>}
           </div>
           <div className='cust-layout'>
             <div className='cust-form'>
@@ -1282,9 +1282,9 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                     <tbody>{filteredCustomers.map(c=>(
                       <tr key={c.id}>
                         <td><div className='cust-name'>{c.name}</div><div className='cust-sub'>{c.email}</div></td>
-                        <td>{c.phone||'â€”'}</td>
-                        <td>{c.device?c.device+(c.model?' '+c.model:''):'â€”'}</td>
-                        <td style={{maxWidth:'160px',color:'#64748b'}}>{c.notes||'â€”'}</td>
+                        <td>{c.phone||'—'}</td>
+                        <td>{c.device?c.device+(c.model?' '+c.model:''):'—'}</td>
+                        <td style={{maxWidth:'160px',color:'#64748b'}}>{c.notes||'—'}</td>
                         <td style={{color:'#475569',whiteSpace:'nowrap'}}>{c.createdAt}</td>
                         <td>
                           <div style={{display:'flex',gap:'6px'}}>
@@ -1303,7 +1303,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         </div>
       )}
 
-      {/* â”€â”€ TICKETS â”€â”€ */}
+      {/* ── TICKETS ── */}
       {tab==='tickets'&&(
         <div className='page'>
           <div className='ticket-stats'>
@@ -1317,10 +1317,10 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
           {/* Export bar */}
           <div className='export-bar'>
             <span className='export-label'>Export Tickets:</span>
-            <button className='btn-sm green' onClick={()=>exportToXLSX(tickets,'Tickets','NNIT_Tickets.xlsx')}>â¬‡ Excel</button>
-            <button className='btn-sm gray' onClick={()=>exportToCSV(tickets,'NNIT_Tickets.csv')}>â¬‡ CSV</button>
-            <button className='btn-sm orange' onClick={()=>{setScanTarget('ticket');startScanner();}}>ðŸ“· Scan Device</button>
-            {backendOnline&&<button className='btn-sm' onClick={()=>syncToBackend('tickets',tickets)}>â˜ Sync to Backend</button>}
+            <button className='btn-sm green' onClick={()=>exportToXLSX(tickets,'Tickets','NNIT_Tickets.xlsx')}>⬇ Excel</button>
+            <button className='btn-sm gray' onClick={()=>exportToCSV(tickets,'NNIT_Tickets.csv')}>⬇ CSV</button>
+            <button className='btn-sm orange' onClick={()=>{setScanTarget('ticket');startScanner();}}>📷 Scan Device</button>
+            {backendOnline&&<button className='btn-sm' onClick={()=>syncToBackend('tickets',tickets)}>☁ Sync to Backend</button>}
           </div>
           <div className='cust-layout'>
             <div className='cust-form'>
@@ -1340,7 +1340,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
               <div className='form-field'><label className='form-label'>Fault Description *</label><input className='form-input' placeholder='Describe the fault...' value={ticketForm.fault} onChange={e=>setTicketForm({...ticketForm,fault:e.target.value})}/></div>
               <div className='form-field'><label className='form-label'>Priority</label><select className='form-select' value={ticketForm.priority} onChange={e=>setTicketForm({...ticketForm,priority:e.target.value as Ticket['priority']})}><option>Low</option><option>Medium</option><option>High</option></select></div>
               <div className='form-field'><label className='form-label'>Status</label><select className='form-select' value={ticketForm.status} onChange={e=>setTicketForm({...ticketForm,status:e.target.value as Ticket['status']})}><option>Open</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select></div>
-              <div className='form-field'><label className='form-label'>Estimated Cost</label><input className='form-input' placeholder='e.g. â‚¬50' value={ticketForm.cost} onChange={e=>setTicketForm({...ticketForm,cost:e.target.value})}/></div>
+              <div className='form-field'><label className='form-label'>Estimated Cost</label><input className='form-input' placeholder='e.g. €50' value={ticketForm.cost} onChange={e=>setTicketForm({...ticketForm,cost:e.target.value})}/></div>
               <div className='form-field'><label className='form-label'>Technician Notes</label><input className='form-input' placeholder='Internal notes...' value={ticketForm.techNotes} onChange={e=>setTicketForm({...ticketForm,techNotes:e.target.value})}/></div>
               <div style={{display:'flex',gap:'8px'}}>
                 <button className='btn-primary' style={{flex:1}} onClick={submitTicket}>{editingTicketId?'Save Changes':'Create Ticket'}</button>
@@ -1364,11 +1364,11 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                     <span style={{background:statusBg[t.status],color:statusColor[t.status],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:600}}>{t.status}</span>
                   </div>
                   <div className='ticket-meta'>
-                    <span>ðŸ‘¤ {t.customerName||'No customer'}</span>
-                    <span>ðŸ“± {t.device} {t.model}</span>
-                    {t.cost&&<span>ðŸ’° {t.cost}</span>}
-                    <span style={{color:priorityColor[t.priority]}}>â— {t.priority}</span>
-                    <span>ðŸ• {t.createdAt}</span>
+                    <span>👤 {t.customerName||'No customer'}</span>
+                    <span>📱 {t.device} {t.model}</span>
+                    {t.cost&&<span>💰 {t.cost}</span>}
+                    <span style={{color:priorityColor[t.priority]}}>● {t.priority}</span>
+                    <span>🕐 {t.createdAt}</span>
                   </div>
                   {t.techNotes&&<div style={{marginTop:'6px',fontSize:'11px',color:'#475569'}}>Notes: {t.techNotes}</div>}
                   <div className='ticket-actions'>
@@ -1376,8 +1376,8 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                     {t.status==='In Progress'&&<button className='btn-sm green' onClick={()=>updateTicketStatus(t.id,'Completed')}>Complete</button>}
                     {t.status!=='Cancelled'&&t.status!=='Completed'&&<button className='btn-sm red' onClick={()=>updateTicketStatus(t.id,'Cancelled')}>Cancel</button>}
                     <button className='btn-sm' onClick={()=>editTicket(t)}>Edit</button>
-                    <button className='btn-sm gray' onClick={()=>handlePrintTicket(t)}>ðŸ–¨ Print</button>
-                    <button className='btn-sm wa' onClick={()=>sendTicketStatusWA(t)}>ðŸ“± WA Update</button>
+                    <button className='btn-sm gray' onClick={()=>handlePrintTicket(t)}>🖨 Print</button>
+                    <button className='btn-sm wa' onClick={()=>sendTicketStatusWA(t)}>📱 WA Update</button>
                     <button className='btn-sm red' onClick={()=>deleteTicket(t.id)}>Delete</button>
                   </div>
                 </div>
@@ -1387,7 +1387,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         </div>
       )}
 
-      {/* â”€â”€ INVOICES â”€â”€ */}
+      {/* ── INVOICES ── */}
       {tab==='invoices'&&(
         <div className='page'>
           <div className='ticket-stats'>
@@ -1395,15 +1395,15 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
               <div key={s} className='ticket-card'>
                 <div className='stat-label'>{s}</div>
                 <div className='stat-value' style={{color:invStatusColor[s]}}>{invoices.filter(i=>i.status===s).length}</div>
-                <div className='stat-sub'>{s==='Paid'?'â‚¬'+invoices.filter(i=>i.status==='Paid').reduce((a,i)=>a+(parseFloat(i.totalCost.replace('â‚¬',''))||0),0).toFixed(2):''}</div>
+                <div className='stat-sub'>{s==='Paid'?'€'+invoices.filter(i=>i.status==='Paid').reduce((a,i)=>a+(parseFloat(i.totalCost.replace('€',''))||0),0).toFixed(2):''}</div>
               </div>
             ))}
           </div>
           {/* Export bar */}
           <div className='export-bar'>
             <span className='export-label'>Export Invoices:</span>
-            <button className='btn-sm green' onClick={()=>exportToXLSX(invoices,'Invoices','NNIT_Invoices.xlsx')}>â¬‡ Excel</button>
-            <button className='btn-sm gray' onClick={()=>exportToCSV(invoices,'NNIT_Invoices.csv')}>â¬‡ CSV</button>
+            <button className='btn-sm green' onClick={()=>exportToXLSX(invoices,'Invoices','NNIT_Invoices.xlsx')}>⬇ Excel</button>
+            <button className='btn-sm gray' onClick={()=>exportToCSV(invoices,'NNIT_Invoices.csv')}>⬇ CSV</button>
           </div>
           <div className='cust-layout'>
             <div className='cust-form'>
@@ -1416,7 +1416,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                   setInvoiceForm({...invoiceForm,ticketId:e.target.value,customerName:t?.customerName??invoiceForm.customerName,customerId:t?.customerId??'',device:t?.device??'',model:t?.model??'',fault:t?.fault??'',customerEmail:c?.email??'',customerPhone:c?.phone??''});
                 }}>
                   <option value=''>-- Select ticket (optional) --</option>
-                  {tickets.map(t=><option key={t.id} value={t.id}>#{t.id.slice(-6)} Â· {t.customerName} Â· {t.fault.slice(0,30)}</option>)}
+                  {tickets.map(t=><option key={t.id} value={t.id}>#{t.id.slice(-6)} · {t.customerName} · {t.fault.slice(0,30)}</option>)}
                 </select>
               </div>
               <div className='form-field'><label className='form-label'>Customer Name *</label><input className='form-input' placeholder='Customer name' value={invoiceForm.customerName} onChange={e=>setInvoiceForm({...invoiceForm,customerName:e.target.value})}/></div>
@@ -1424,11 +1424,11 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
               <div className='form-field'><label className='form-label'>Customer Phone</label><input className='form-input' placeholder='+49 123...' value={invoiceForm.customerPhone} onChange={e=>setInvoiceForm({...invoiceForm,customerPhone:e.target.value})}/></div>
               <div className='form-field'><label className='form-label'>Device</label><input className='form-input' placeholder='e.g. Samsung Galaxy S23' value={invoiceForm.device+' '+invoiceForm.model} onChange={e=>setInvoiceForm({...invoiceForm,device:e.target.value,model:''})}/></div>
               <div className='form-field'><label className='form-label'>Fault / Service</label><input className='form-input' placeholder='Describe the repair...' value={invoiceForm.fault} onChange={e=>setInvoiceForm({...invoiceForm,fault:e.target.value})}/></div>
-              <div className='form-field'><label className='form-label'>Labour Cost (â‚¬)</label><input className='form-input' type='number' placeholder='0.00' value={invoiceForm.laborCost} onChange={e=>setInvoiceForm({...invoiceForm,laborCost:e.target.value})}/></div>
-              <div className='form-field'><label className='form-label'>Parts Cost (â‚¬)</label><input className='form-input' type='number' placeholder='0.00' value={invoiceForm.partsCost} onChange={e=>setInvoiceForm({...invoiceForm,partsCost:e.target.value})}/></div>
+              <div className='form-field'><label className='form-label'>Labour Cost (€)</label><input className='form-input' type='number' placeholder='0.00' value={invoiceForm.laborCost} onChange={e=>setInvoiceForm({...invoiceForm,laborCost:e.target.value})}/></div>
+              <div className='form-field'><label className='form-label'>Parts Cost (€)</label><input className='form-input' type='number' placeholder='0.00' value={invoiceForm.partsCost} onChange={e=>setInvoiceForm({...invoiceForm,partsCost:e.target.value})}/></div>
               <div style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:'6px',padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <span style={{fontSize:'11px',color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Total</span>
-                <span style={{fontSize:'18px',fontWeight:700,color:'#4ade80'}}>â‚¬{((parseFloat(invoiceForm.laborCost)||0)+(parseFloat(invoiceForm.partsCost)||0)).toFixed(2)}</span>
+                <span style={{fontSize:'18px',fontWeight:700,color:'#4ade80'}}>€{((parseFloat(invoiceForm.laborCost)||0)+(parseFloat(invoiceForm.partsCost)||0)).toFixed(2)}</span>
               </div>
               <div className='form-field'><label className='form-label'>Status</label><select className='form-select' value={invoiceForm.status} onChange={e=>setInvoiceForm({...invoiceForm,status:e.target.value as Invoice['status']})}><option>Draft</option><option>Sent</option><option>Paid</option><option>Overdue</option></select></div>
               <div className='form-field'><label className='form-label'>Due Date</label><input className='form-input' type='date' value={invoiceForm.dueDate} onChange={e=>setInvoiceForm({...invoiceForm,dueDate:e.target.value})}/></div>
@@ -1457,13 +1457,13 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                         <td><div style={{color:'#94a3b8'}}>{inv.device}</div><div className='cust-sub'>{inv.fault?.slice(0,40)}</div></td>
                         <td style={{fontWeight:700,color:'#4ade80'}}>{inv.totalCost}</td>
                         <td><span style={{background:invStatusBg[inv.status],color:invStatusColor[inv.status],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:600}}>{inv.status}</span></td>
-                        <td style={{color:'#475569',fontSize:'11px'}}>{inv.dueDate||'â€”'}</td>
+                        <td style={{color:'#475569',fontSize:'11px'}}>{inv.dueDate||'—'}</td>
                         <td>
                           <div style={{display:'flex',gap:'4px',flexWrap:'wrap'}}>
                             {inv.status!=='Paid'&&<button className='btn-sm green' onClick={()=>updateInvoiceStatus(inv.id,'Paid')}>Paid</button>}
                             {inv.status==='Draft'&&<button className='btn-sm' onClick={()=>updateInvoiceStatus(inv.id,'Sent')}>Send</button>}
                             <button className='btn-sm gray' onClick={()=>downloadInvoicePDF(inv)}>PDF</button>
-                            {inv.customerPhone&&<button className='btn-sm wa' onClick={()=>sendInvoiceWA(inv)}>ðŸ“± WA</button>}
+                            {inv.customerPhone&&<button className='btn-sm wa' onClick={()=>sendInvoiceWA(inv)}>📱 WA</button>}
                             <button className='btn-sm' onClick={()=>editInvoice(inv)}>Edit</button>
                             <button className='btn-sm red' onClick={()=>deleteInvoice(inv.id)}>Del</button>
                           </div>
@@ -1478,27 +1478,27 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         </div>
       )}
 
-      {/* â”€â”€ INVENTORY â”€â”€ */}
+      {/* ── INVENTORY ── */}
       {tab==='inventory'&&(
         <div className='page'>
           <div className='ticket-stats'>
             <div className='ticket-card'><div className='stat-label'>Total Items</div><div className='stat-value' style={{color:'#60a5fa'}}>{inventory.length}</div></div>
             <div className='ticket-card'><div className='stat-label'>Low Stock</div><div className='stat-value' style={{color:lowStockItems.length>0?'#f87171':'#4ade80'}}>{lowStockItems.length}</div></div>
             <div className='ticket-card'><div className='stat-label'>Total Units</div><div className='stat-value' style={{color:'#c084fc'}}>{inventory.reduce((s,i)=>s+i.quantity,0)}</div></div>
-            <div className='ticket-card'><div className='stat-label'>Stock Value</div><div className='stat-value' style={{color:'#4ade80',fontSize:'18px'}}>â‚¬{inventoryValue.toFixed(2)}</div></div>
+            <div className='ticket-card'><div className='stat-label'>Stock Value</div><div className='stat-value' style={{color:'#4ade80',fontSize:'18px'}}>€{inventoryValue.toFixed(2)}</div></div>
           </div>
           {lowStockItems.length>0&&(
             <div style={{background:'#422006',border:'1px solid #92400e',borderRadius:'8px',padding:'12px 16px',display:'flex',alignItems:'center',gap:'10px'}}>
-              <span style={{fontSize:'16px'}}>âš </span>
+              <span style={{fontSize:'16px'}}>⚠</span>
               <span style={{fontSize:'13px',color:'#fbbf24',fontWeight:600}}>Low stock alert: {lowStockItems.map(i=>i.name).join(', ')}</span>
             </div>
           )}
           {/* Export bar */}
           <div className='export-bar'>
             <span className='export-label'>Export Inventory:</span>
-            <button className='btn-sm green' onClick={()=>exportToXLSX(inventory,'Inventory','NNIT_Inventory.xlsx')}>â¬‡ Excel</button>
-            <button className='btn-sm gray' onClick={()=>exportToCSV(inventory,'NNIT_Inventory.csv')}>â¬‡ CSV</button>
-            <button className='btn-sm orange' onClick={()=>{setScanTarget('inventory');startScanner();}}>ðŸ“· Scan Part</button>
+            <button className='btn-sm green' onClick={()=>exportToXLSX(inventory,'Inventory','NNIT_Inventory.xlsx')}>⬇ Excel</button>
+            <button className='btn-sm gray' onClick={()=>exportToCSV(inventory,'NNIT_Inventory.csv')}>⬇ CSV</button>
+            <button className='btn-sm orange' onClick={()=>{setScanTarget('inventory');startScanner();}}>📷 Scan Part</button>
           </div>
           <div className='cust-layout'>
             <div className='cust-form'>
@@ -1508,7 +1508,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
               <div className='form-field'><label className='form-label'>SKU / Part #</label><input className='form-input' placeholder='e.g. SCR-IP13-001' value={itemForm.sku} onChange={e=>setItemForm({...itemForm,sku:e.target.value})}/></div>
               <div className='form-field'><label className='form-label'>Quantity</label><input className='form-input' type='number' min={0} value={itemForm.quantity} onChange={e=>setItemForm({...itemForm,quantity:parseInt(e.target.value)||0})}/></div>
               <div className='form-field'><label className='form-label'>Min Stock Alert</label><input className='form-input' type='number' min={0} value={itemForm.minStock} onChange={e=>setItemForm({...itemForm,minStock:parseInt(e.target.value)||0})}/></div>
-              <div className='form-field'><label className='form-label'>Unit Cost (â‚¬)</label><input className='form-input' type='number' placeholder='0.00' value={itemForm.unitCost} onChange={e=>setItemForm({...itemForm,unitCost:e.target.value})}/></div>
+              <div className='form-field'><label className='form-label'>Unit Cost (€)</label><input className='form-input' type='number' placeholder='0.00' value={itemForm.unitCost} onChange={e=>setItemForm({...itemForm,unitCost:e.target.value})}/></div>
               <div className='form-field'><label className='form-label'>Supplier</label><input className='form-input' placeholder='Supplier name' value={itemForm.supplier} onChange={e=>setItemForm({...itemForm,supplier:e.target.value})}/></div>
               <div className='form-field'><label className='form-label'>Notes</label><input className='form-input' placeholder='Notes...' value={itemForm.notes} onChange={e=>setItemForm({...itemForm,notes:e.target.value})}/></div>
               <div style={{display:'flex',gap:'8px'}}>
@@ -1527,13 +1527,13 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                     <div style={{display:'flex',gap:'10px',marginTop:'4px',flexWrap:'wrap'}}>
                       {item.category&&<span className='badge badge-blue'>{item.category}</span>}
                       {item.sku&&<span className='inv-meta'>SKU: {item.sku}</span>}
-                      {item.supplier&&<span className='inv-meta'>ðŸ“¦ {item.supplier}</span>}
-                      {item.unitCost&&<span className='inv-meta'>â‚¬{item.unitCost}/unit</span>}
+                      {item.supplier&&<span className='inv-meta'>📦 {item.supplier}</span>}
+                      {item.unitCost&&<span className='inv-meta'>€{item.unitCost}/unit</span>}
                     </div>
                     {item.notes&&<div style={{marginTop:'4px',fontSize:'11px',color:'#475569'}}>{item.notes}</div>}
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',flexShrink:0}}>
-                    <button className='stock-btn' onClick={()=>adjustStock(item.id,-1)}>âˆ’</button>
+                    <button className='stock-btn' onClick={()=>adjustStock(item.id,-1)}>−</button>
                     <div className='inv-qty' style={{color:item.quantity<=item.minStock?'#f87171':item.quantity<=item.minStock*2?'#fbbf24':'#4ade80'}}>{item.quantity}</div>
                     <button className='stock-btn' onClick={()=>adjustStock(item.id,1)}>+</button>
                   </div>
@@ -1549,7 +1549,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         </div>
       )}
 
-      {/* â”€â”€ CALENDAR â”€â”€ */}
+      {/* ── CALENDAR ── */}
       {tab==='calendar'&&(
         <div className='page'>
           <div className='ticket-stats'>
@@ -1560,8 +1560,8 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
           </div>
           <div className='export-bar'>
             <span className='export-label'>Export:</span>
-            <button className='btn-sm green' onClick={()=>exportToXLSX(appointments,'Appointments','NNIT_Appointments.xlsx')}>â¬‡ Excel</button>
-            <button className='btn-sm gray' onClick={()=>exportToCSV(appointments,'NNIT_Appointments.csv')}>â¬‡ CSV</button>
+            <button className='btn-sm green' onClick={()=>exportToXLSX(appointments,'Appointments','NNIT_Appointments.xlsx')}>⬇ Excel</button>
+            <button className='btn-sm gray' onClick={()=>exportToCSV(appointments,'NNIT_Appointments.csv')}>⬇ CSV</button>
             <div style={{marginLeft:'auto',display:'flex',gap:'8px',alignItems:'center'}}>
               <button className={'filter-btn'+(calView==='list'?' active':'')} onClick={()=>setCalView('list')}>List</button>
               <button className={'filter-btn'+(calView==='month'?' active':'')} onClick={()=>setCalView('month')}>Month</button>
@@ -1584,7 +1584,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                 <label className='form-label'>Link to Ticket</label>
                 <select className='form-select' value={apptForm.ticketId} onChange={e=>setApptForm({...apptForm,ticketId:e.target.value})}>
                   <option value=''>-- No ticket --</option>
-                  {tickets.map(t=><option key={t.id} value={t.id}>#{t.id.slice(-6)} Â· {t.fault.slice(0,30)}</option>)}
+                  {tickets.map(t=><option key={t.id} value={t.id}>#{t.id.slice(-6)} · {t.fault.slice(0,30)}</option>)}
                 </select>
               </div>
               <div className='form-field'><label className='form-label'>Date *</label><input className='form-input' type='date' value={apptForm.date} onChange={e=>setApptForm({...apptForm,date:e.target.value})}/></div>
@@ -1602,9 +1602,9 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
               {calView==='month'?(
                 <>
                   <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                    <button className='btn-sm' onClick={()=>{const [y,m]=calMonth.split('-').map(Number);const d=new Date(y,m-2,1);setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}}>â€¹ Prev</button>
+                    <button className='btn-sm' onClick={()=>{const [y,m]=calMonth.split('-').map(Number);const d=new Date(y,m-2,1);setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}}>‹ Prev</button>
                     <span style={{fontWeight:700,color:'#f1f5f9',flex:1,textAlign:'center'}}>{new Date(calMonth+'-01').toLocaleDateString('de-DE',{month:'long',year:'numeric'})}</span>
-                    <button className='btn-sm' onClick={()=>{const [y,m]=calMonth.split('-').map(Number);const d=new Date(y,m,1);setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}}>Next â€º</button>
+                    <button className='btn-sm' onClick={()=>{const [y,m]=calMonth.split('-').map(Number);const d=new Date(y,m,1);setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}}>Next ›</button>
                   </div>
                   <div className='cal-header'>
                     {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=><div key={d} className='cal-day-name'>{d}</div>)}
@@ -1631,14 +1631,14 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                   <div key={a.id} className='ticket-row'>
                     <div className='ticket-head'>
                       <span className='ticket-id'>#{a.id.slice(-6)}</span>
-                      <span className='ticket-title'>{a.type} â€” {a.customerName||'No customer'}</span>
+                      <span className='ticket-title'>{a.type} — {a.customerName||'No customer'}</span>
                       <span style={{background:apptStatusBg[a.status],color:apptStatusColor[a.status],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:600}}>{a.status}</span>
                     </div>
                     <div className='ticket-meta'>
-                      <span>ðŸ“… {a.date}</span>
-                      <span>ðŸ• {a.time}</span>
-                      <span>â± {a.duration} min</span>
-                      {a.ticketId&&<span>ðŸŽ« Ticket #{a.ticketId.slice(-6)}</span>}
+                      <span>📅 {a.date}</span>
+                      <span>🕐 {a.time}</span>
+                      <span>⏱ {a.duration} min</span>
+                      {a.ticketId&&<span>🎫 Ticket #{a.ticketId.slice(-6)}</span>}
                     </div>
                     {a.notes&&<div style={{marginTop:'6px',fontSize:'11px',color:'#475569'}}>Notes: {a.notes}</div>}
                     <div className='ticket-actions'>
@@ -1646,7 +1646,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                       {a.status==='Confirmed'&&<button className='btn-sm purple' onClick={()=>updateApptStatus(a.id,'Completed')}>Complete</button>}
                       {a.status!=='Cancelled'&&a.status!=='Completed'&&<button className='btn-sm red' onClick={()=>updateApptStatus(a.id,'Cancelled')}>Cancel</button>}
                       <button className='btn-sm' onClick={()=>editAppt(a)}>Edit</button>
-                      <button className='btn-sm wa' onClick={()=>sendApptWA(a)}>ðŸ“± WA Reminder</button>
+                      <button className='btn-sm wa' onClick={()=>sendApptWA(a)}>📱 WA Reminder</button>
                       <button className='btn-sm red' onClick={()=>deleteAppt(a.id)}>Delete</button>
                     </div>
                   </div>
@@ -1657,13 +1657,13 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
         </div>
       )}
 
-      {/* â”€â”€ ANALYTICS â”€â”€ */}
+      {/* ── ANALYTICS ── */}
       {tab==='analytics'&&(
         <div className='page'>
           {/* Full export */}
           <div className='export-bar'>
             <span className='export-label'>Export All Data:</span>
-            <button className='btn-primary' onClick={exportAllXLSX}>â¬‡ Download Full Excel Export</button>
+            <button className='btn-primary' onClick={exportAllXLSX}>⬇ Download Full Excel Export</button>
             <button className='btn-sm gray' onClick={()=>exportToCSV(customers,'NNIT_Customers.csv')}>Customers CSV</button>
             <button className='btn-sm gray' onClick={()=>exportToCSV(tickets,'NNIT_Tickets.csv')}>Tickets CSV</button>
             <button className='btn-sm gray' onClick={()=>exportToCSV(invoices,'NNIT_Invoices.csv')}>Invoices CSV</button>
@@ -1672,12 +1672,12 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
           <div className='analytics-grid'>
             <div className='analytics-card'>
               <div className='analytics-label'>Total Revenue</div>
-              <div className='analytics-value' style={{color:'#4ade80'}}>â‚¬{totalRevenue.toFixed(2)}</div>
+              <div className='analytics-value' style={{color:'#4ade80'}}>€{totalRevenue.toFixed(2)}</div>
               <div className='analytics-sub'>From paid invoices</div>
             </div>
             <div className='analytics-card'>
               <div className='analytics-label'>Pending Revenue</div>
-              <div className='analytics-value' style={{color:'#fbbf24'}}>â‚¬{pendingRevenue.toFixed(2)}</div>
+              <div className='analytics-value' style={{color:'#fbbf24'}}>€{pendingRevenue.toFixed(2)}</div>
               <div className='analytics-sub'>Draft + Sent invoices</div>
             </div>
             <div className='analytics-card'>
@@ -1697,7 +1697,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
             </div>
             <div className='analytics-card'>
               <div className='analytics-label'>Stock Value</div>
-              <div className='analytics-value' style={{color:'#4ade80',fontSize:'22px'}}>â‚¬{inventoryValue.toFixed(2)}</div>
+              <div className='analytics-value' style={{color:'#4ade80',fontSize:'22px'}}>€{inventoryValue.toFixed(2)}</div>
               <div className='analytics-sub'>{inventory.length} item types</div>
             </div>
           </div>
@@ -1763,7 +1763,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
             <div className='panel'>
               <div className='panel-head'><span className='panel-title'>Low Stock Items</span></div>
               <div className='panel-body'>
-                {lowStockItems.length===0?<div className='empty-msg' style={{color:'#4ade80'}}>âœ“ All stock levels healthy.</div>:(
+                {lowStockItems.length===0?<div className='empty-msg' style={{color:'#4ade80'}}>✓ All stock levels healthy.</div>:(
                   <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                     {lowStockItems.map(item=>(
                       <div key={item.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 12px',background:'#450a0a',borderRadius:'6px'}}>
