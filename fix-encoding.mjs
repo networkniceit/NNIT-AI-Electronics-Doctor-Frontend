@@ -1,0 +1,17 @@
+﻿import { readFileSync, writeFileSync } from "fs";
+let src = readFileSync("./src/App.tsx", "utf8");
+src = src.replace(/â‚¬/g, "€");
+src = src.replace(/â€"/g, "—");
+src = src.replace(/â€˜/g, "'");
+src = src.replace(/â€™/g, "'");
+src = src.replace(/â€œ/g, '"');
+src = src.replace(/â€/g, '"');
+src = src.replace(/Â·/g, "·");
+src = src.replace(/â¬‡/g, "⬇");
+src = src.replace(/ðŸ"¬/g, "🔬");
+src = src.replace(/ðŸ'¤/g, "👤");
+src = src.replace(/âš™/g, "⚙");
+src = src.replace(/ðŸ"·/g, "📷");
+src = src.replace(/ðŸ"/g, "🔍");
+writeFileSync("./src/App.tsx", src, "utf8");
+console.log("Encoding fixed OK");
