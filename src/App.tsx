@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -543,11 +543,15 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     const parts = parseFloat(invoiceForm.partsCost) || 0;
     const total = (labor + parts).toFixed(2);
     const now = new Date().toLocaleString();
+    const payload = { ticket_id: invoiceForm.ticketId, customer_name: invoiceForm.customerName, customer_email: invoiceForm.customerEmail, customer_phone: invoiceForm.customerPhone, device: invoiceForm.device+' '+invoiceForm.model, fault: invoiceForm.fault, labour_cost: labor, parts_cost: parts, total: parseFloat(total), status: invoiceForm.status, due_date: invoiceForm.dueDate, notes: invoiceForm.notes };
     if (editingInvoiceId) {
       saveInvoices(invoices.map(i => i.id === editingInvoiceId ? { ...i, ...invoiceForm, totalCost: '€'+total } : i));
+      const numId = parseInt(editingInvoiceId.replace('INV-','')) || 0;
+      if (backendOnline) axios.put(`${API}/ai/invoices/${numId}`, payload).catch(()=>{});
       setEditingInvoiceId(null); notify('Invoice updated.');
     } else {
       saveInvoices([{ ...invoiceForm, id: 'INV-'+Date.now().toString().slice(-6), totalCost:'€'+total, createdAt: now }, ...invoices]);
+      if (backendOnline) axios.post(`${API}/ai/invoices`, payload).catch(()=>{});
       notify('Invoice created.');
     }
     setInvoiceForm(blankInvoice);
@@ -1781,6 +1785,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     </>
   );
 }
+
 
 
 
