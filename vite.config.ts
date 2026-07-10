@@ -3,12 +3,4 @@ import react from "@vitejs/plugin-react"
 
 export default defineConfig({
   plugins: [react()],
-  build: {
-    charset: "utf8",
-  },
-  server: {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-    },
-  },
 })
