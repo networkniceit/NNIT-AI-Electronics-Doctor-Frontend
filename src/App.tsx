@@ -724,6 +724,27 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
     if (!confirm('Delete this invoice?')) return;
     saveInvoices(invoices.filter(i => i.id !== id)); notify('Invoice deleted.', 'warning');
   }
+  async function sendToStripeCheckout(inv: Invoice) {
+    const amount = parseFloat(inv.totalCost.replace('€','')) || 0;
+    if (amount <= 0) { notify('Invoice total must be greater than 0','error'); return; }
+    try {
+      const res = await axios.post(`${API}/ai/payments/create-checkout`, {
+        amount,
+        currency: 'eur',
+        customer_name: inv.customerName,
+        customer_email: inv.customerEmail,
+        invoice_id: inv.id,
+        description: inv.fault || 'Electronics repair service'
+      });
+      if (res.data.checkout_url) {
+        window.open(res.data.checkout_url, '_blank');
+        notify('Stripe checkout opened!', 'success');
+      }
+    } catch(e: any) {
+      notify(e?.response?.data?.detail ?? 'Stripe checkout failed','error');
+    }
+  }
+
   function updateInvoiceStatus(id: string, status: Invoice['status']) {
     saveInvoices(invoices.map(i => i.id === id ? { ...i, status } : i));
     notify(`Invoice marked ${status}.`);
@@ -1638,6 +1659,7 @@ function MainApp({ authUser, onLogout }: { authUser: string; onLogout: () => voi
                           <div style={{display:'flex',gap:'4px',flexWrap:'wrap'}}>
                             {inv.status!=='Paid'&&<button className='btn-sm green' onClick={()=>updateInvoiceStatus(inv.id,'Paid')}>Paid</button>}
                             {inv.status==='Draft'&&<button className='btn-sm' onClick={()=>updateInvoiceStatus(inv.id,'Sent')}>Send</button>}
+                            {inv.status!=='Paid'&&<button className='btn-sm' style={{background:'#6366f1',color:'#fff'}} onClick={()=>sendToStripeCheckout(inv)}>💳 Pay</button>}
                             <button className='btn-sm gray' onClick={()=>downloadInvoicePDF(inv)}>PDF</button>
                             {inv.customerPhone&&<button className='btn-sm wa' onClick={()=>sendInvoiceWA(inv)}>📱 WA</button>}
                             <button className='btn-sm' onClick={()=>editInvoice(inv)}>Edit</button>
