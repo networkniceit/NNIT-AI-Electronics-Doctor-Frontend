@@ -50,44 +50,59 @@ interface JobQueueItem {
 
 type Tab = 'dashboard' | 'customers' | 'tickets' | 'invoices' | 'inventory' | 'analytics' | 'calendar' | 'ai_chat' | 'warranty' | 'job_queue' | 'reports' | 'device_history' | 'settings';
 
+// ── NNIT ENTERPRISE GATE ──
+// One login for every NNIT app: the Enterprise account. The server checks that the account is verified, approved and subscribed.
+const ENTERPRISE_API = 'https://nnit-enterprise-production.up.railway.app';
+const VERIFY_PAGE = 'https://nnit-enterprise-web-production.up.railway.app/nnit-gate/';
+
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('nnit_token');
+  if (token && typeof config.url === 'string' && config.url.startsWith(API)) {
+    (config.headers as any).Authorization = 'Bearer ' + token;
+  }
+  return config;
+});
+axios.interceptors.response.use((r) => r, (err) => {
+  const gate = err?.response?.data?.gate;
+  if (gate && gate !== 'owner-only' && gate !== 'unavailable') {
+    localStorage.removeItem('nnit_token');
+    localStorage.removeItem('nnit_user');
+    sessionStorage.setItem('nnit_gate_msg', err.response.data.detail || 'Please sign in again.');
+    window.location.reload();
+  }
+  return Promise.reject(err);
+});
+
 // ── LOGIN SCREEN ──
 function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => void }) {
-  const [mode, setMode] = useState<'login'|'register'>('login');
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => { const m = sessionStorage.getItem('nnit_gate_msg') || ''; sessionStorage.removeItem('nnit_gate_msg'); return m; });
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
-    if (!username.trim() || !password.trim()) { setError('Username and password required.'); return; }
+    if (!email.trim() || !password.trim()) { setError('Email and password required.'); return; }
     setLoading(true); setError('');
     try {
-      if (mode === 'register') {
-        await axios.post(`${API}/ai/auth/register`, { username, password, full_name: fullName, role: 'Admin' });
-        setMode('login'); setError('Registered! Please log in.');
-      } else {
-        const res = await axios.post(`${API}/ai/auth/login`, { username, password });
-        const token = res.data?.access_token ?? res.data?.token ?? res.data?.key ?? '';
-        if (token) {
-          localStorage.setItem('nnit_token', token);
-          localStorage.setItem('nnit_user', username);
-          onLogin(token, username);
-        } else {
-          // Backend login succeeded but no token — allow access anyway
-          localStorage.setItem('nnit_user', username);
-          onLogin('local', username);
-        }
-      }
+      const res = await axios.post(`${ENTERPRISE_API}/api/auth/login`, { email: email.trim(), password });
+      const token = res.data?.token ?? '';
+      if (!token) throw new Error('No session was returned.');
+      const gate = await fetch(`${ENTERPRISE_API}/api/enterprise/gate/check`, { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(r => r.json());
+      if (!gate.allowed) { setError(gate.reason || 'Access is not allowed yet.'); setLoading(false); return; }
+      localStorage.setItem('nnit_token', token);
+      localStorage.setItem('nnit_user', email.trim());
+      onLogin(token, email.trim());
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Login failed. Check credentials.');
+      setError(e?.response?.data?.error ?? e?.message ?? 'Login failed. Check your details.');
     }
     setLoading(false);
   }
 
+  const input = {background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'} as const;
+  const label = {fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'} as const;
   return (
     <div style={{minHeight:'100vh',background:'#0b0f1a',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Inter','Segoe UI',system-ui,sans-serif"}}>
-      <div style={{width:380,background:'#111827',border:'1px solid #1e2d40',borderRadius:14,padding:36,display:'flex',flexDirection:'column',gap:18}}>
+      <div style={{width:380,maxWidth:'94vw',background:'#111827',border:'1px solid #1e2d40',borderRadius:14,padding:36,display:'flex',flexDirection:'column',gap:18}}>
         <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
           <div style={{width:42,height:42,background:'linear-gradient(135deg,#3b82f6,#8b5cf6)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>🔬</div>
           <div>
@@ -95,28 +110,21 @@ function LoginScreen({ onLogin }: { onLogin: (token: string, user: string) => vo
             <div style={{fontSize:11,color:'#475569'}}>Network Nice IT (NNIT)</div>
           </div>
         </div>
-        <div style={{fontSize:13,fontWeight:600,color:'#f1f5f9'}}>{mode==='login'?'Sign In':'Create Account'}</div>
-        {mode==='register'&&(
-          <div style={{display:'flex',flexDirection:'column',gap:4}}>
-            <label style={{fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Full Name</label>
-            <input style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'}} placeholder='Your name' value={fullName} onChange={e=>setFullName(e.target.value)}/>
-          </div>
-        )}
+        <div style={{fontSize:13,fontWeight:600,color:'#f1f5f9'}}>Sign in with your NNIT Enterprise account</div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Username</label>
-          <input style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'}} placeholder='Username' value={username} onChange={e=>setUsername(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
+          <label style={label}>Email</label>
+          <input style={input} type='email' autoComplete='username' placeholder='Email' value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:10,color:'#475569',textTransform:'uppercase',letterSpacing:'.8px'}}>Password</label>
-          <input style={{background:'#0d1525',border:'1px solid #1a2740',borderRadius:6,padding:'8px 10px',fontSize:12,color:'#e2e8f0',outline:'none',width:'100%'}} type='password' placeholder='Password' value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
+          <label style={label}>Password</label>
+          <input style={input} type='password' autoComplete='current-password' placeholder='Password' value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
         </div>
-        {error&&<div style={{background: error.includes('Registered') ?'#14532d':'#450a0a',color:error.includes('Registered')?'#4ade80':'#f87171',borderRadius:6,padding:'8px 12px',fontSize:12}}>{error}</div>}
+        {error&&<div style={{background:'#450a0a',color:'#f87171',borderRadius:6,padding:'8px 12px',fontSize:12}}>{error}</div>}
         <button onClick={handleSubmit} disabled={loading} style={{background:'linear-gradient(135deg,#3b82f6,#6366f1)',border:'none',color:'#fff',padding:'10px 20px',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer',opacity:loading?0.7:1}}>
-          {loading?'Please wait...':(mode==='login'?'Sign In':'Create Account')}
+          {loading?'Please wait...':'Sign In'}
         </button>
         <div style={{textAlign:'center',fontSize:12,color:'#475569'}}>
-          {mode==='login'?<>No account? <span style={{color:'#60a5fa',cursor:'pointer'}} onClick={()=>{setMode('register');setError('');}}>Register</span></>
-            :<>Have an account? <span style={{color:'#60a5fa',cursor:'pointer'}} onClick={()=>{setMode('login');setError('');}}>Sign In</span></>}
+          New here? Create your Enterprise account and get verified: <a href={VERIFY_PAGE} target='_self' style={{color:'#60a5fa'}}>open verification</a>
         </div>
       </div>
     </div>
